@@ -43,3 +43,5 @@ models:
       - name: is_cancelled
         tests:
           - not_null
+      - name: warehouse_created_at
+        description: Timestamp when this record was synced into the data warehouse.
