@@ -1,8 +1,8 @@
-name: 'thelook_analytics'
+name: 'ecommerce_analytics'
 version: '1.0.0'
 config-version: 2
 
-profile: 'thelook_analytics'
+profile: 'ecommerce_analytics'
 
 model-paths: ["models"]
 analysis-paths: ["analyses"]
@@ -24,7 +24,7 @@ snapshot-paths: ["snapshots"]
 # ---------------------------------------------------------------------------
 
 models:
-  thelook_analytics:
+  ecommerce_analytics:
 
     staging:
       +schema: staging
@@ -52,14 +52,14 @@ models:
       +materialized: table
 
 snapshots:
-  thelook_analytics:
+  ecommerce_analytics:
     +target_schema: snapshots
 
 # ---------------------------------------------------------------------------
 # Global test severity
 # ---------------------------------------------------------------------------
 tests:
-  thelook_analytics:
+  ecommerce_analytics:
     +severity: error
 
 # ---------------------------------------------------------------------------

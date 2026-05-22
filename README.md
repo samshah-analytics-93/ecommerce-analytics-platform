@@ -107,10 +107,10 @@ SCD Type 2 history using dbt's `check` strategy (no `updated_at` in source).
 
 ### Profile
 
-Add a `thelook_analytics` profile to your `~/.dbt/profiles.yml`:
+Add a `ecommerce_analytics` profile to your `~/.dbt/profiles.yml`:
 
 ```yaml
-thelook_analytics:
+ecommerce_analytics:
   target: dev
   outputs:
     dev:
