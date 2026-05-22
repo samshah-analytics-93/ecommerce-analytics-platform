@@ -4,6 +4,12 @@ A dbt project built on the [TheLook E-Commerce](https://console.cloud.google.com
 
 ---
 
+## Architecture
+
+![Architecture Diagram](diagrams/architecture.png)
+
+---
+
 ## AI Tool Usage
 
 Claude Sonnet (Anthropic) was used during development as a coding assistant — primarily for boilerplate generation, sanity checking SQL logic, and drafting documentation. All design decisions, layer structure, materialization strategies, and business logic were defined and reviewed independently.
