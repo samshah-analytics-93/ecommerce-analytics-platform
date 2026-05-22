@@ -1,0 +1,63 @@
+version: 2
+
+semantic_models:
+  - name: customers
+    description: >
+      Customer dimension model with lifetime metrics and status. Used for
+      customer-level metrics like lifetime value and customer counts by
+      status or channel.
+    model: ref('mart_customer_lifetime_value')
+
+    entities:
+      - name: customer
+        type: primary
+        expr: user_id
+
+    dimensions:
+      - name: first_order_date
+        type: time
+        type_params:
+          time_granularity: day
+        expr: first_order_date
+
+      - name: acquisition_channel
+        type: categorical
+
+      - name: country
+        type: categorical
+
+      - name: gender
+        type: categorical
+
+      - name: customer_status
+        type: categorical
+
+      - name: age
+        type: categorical
+        expr: cast(age as string)
+
+    measures:
+      - name: total_customers
+        description: Count of all registered customers.
+        agg: count
+        expr: user_id
+
+      - name: active_customers
+        description: Count of customers with status = 'active'.
+        agg: sum
+        expr: case when customer_status = 'active' then 1 else 0 end
+
+      - name: total_lifetime_value
+        description: Sum of lifetime_value across all customers.
+        agg: sum
+        expr: lifetime_value
+
+      - name: avg_lifetime_value
+        description: Average lifetime value per customer.
+        agg: average
+        expr: lifetime_value
+
+      - name: avg_customer_tenure
+        description: Average customer tenure in days (buyers only).
+        agg: average
+        expr: customer_tenure_days

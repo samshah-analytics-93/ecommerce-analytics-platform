@@ -1,0 +1,140 @@
+version: 2
+
+metrics:
+
+  # ---------------------------------------------------------------------------
+  # Revenue & volume metrics
+  # ---------------------------------------------------------------------------
+  - name: revenue
+    description: >
+      Total revenue from fulfilled items (excludes Cancelled and Returned).
+      This is the company's primary top-line metric.
+    label: Revenue
+    type: simple
+    type_params:
+      measure: total_revenue
+
+  - name: gross_margin
+    description: Revenue minus product cost for fulfilled items.
+    label: Gross Margin
+    type: simple
+    type_params:
+      measure: total_margin
+
+  - name: margin_rate
+    description: Gross margin as a percentage of revenue.
+    label: Margin Rate (%)
+    type: derived
+    type_params:
+      expr: total_margin / nullif(total_revenue, 0) * 100
+      metrics:
+        - name: total_margin
+          offset_window: null
+        - name: total_revenue
+          offset_window: null
+
+  - name: orders
+    description: Distinct count of orders with at least one fulfilled item.
+    label: Orders
+    type: simple
+    type_params:
+      measure: order_count
+
+  - name: average_order_value
+    description: Revenue per order.
+    label: Avg Order Value
+    type: derived
+    type_params:
+      expr: total_revenue / nullif(order_count, 0)
+      metrics:
+        - name: total_revenue
+          offset_window: null
+        - name: order_count
+          offset_window: null
+
+  - name: items_sold
+    description: Count of individual items sold (revenue items only).
+    label: Items Sold
+    type: simple
+    type_params:
+      measure: total_items_sold
+
+  # ---------------------------------------------------------------------------
+  # Revenue growth metrics
+  # ---------------------------------------------------------------------------
+  - name: revenue_mom_growth
+    description: >
+      Month-over-month revenue growth as a percentage.
+      Calculated as (current month - prior month) / prior month × 100.
+    label: Revenue MoM Growth (%)
+    type: derived
+    type_params:
+      expr: (total_revenue - total_revenue_prior) / nullif(total_revenue_prior, 0) * 100
+      metrics:
+        - name: total_revenue
+          offset_window: null
+        - name: total_revenue
+          offset_window: 1 month
+          alias: total_revenue_prior
+
+  # ---------------------------------------------------------------------------
+  # Return metrics
+  # ---------------------------------------------------------------------------
+  - name: return_rate
+    description: >
+      Returned items as a percentage of all non-cancelled items.
+      Cancelled items are excluded from the denominator because they
+      were never shipped and could not have been returned.
+    label: Return Rate (%)
+    type: derived
+    type_params:
+      expr: total_items_returned / nullif(total_non_cancelled_items, 0) * 100
+      metrics:
+        - name: total_items_returned
+          offset_window: null
+        - name: total_non_cancelled_items
+          offset_window: null
+
+  - name: net_revenue
+    description: >
+      Gross revenue minus revenue lost to returns.
+    label: Net Revenue
+    type: derived
+    type_params:
+      expr: gross_revenue_all - returned_revenue
+      metrics:
+        - name: gross_revenue_all
+          offset_window: null
+        - name: returned_revenue
+          offset_window: null
+
+  # ---------------------------------------------------------------------------
+  # Customer metrics
+  # ---------------------------------------------------------------------------
+  - name: active_customer_count
+    description: >
+      Number of customers who placed a fulfilled order within the active
+      customer window (default 90 days).
+    label: Active Customers
+    type: simple
+    type_params:
+      measure: active_customers
+
+  - name: customer_lifetime_value
+    description: Average lifetime value across all customers (including non-buyers).
+    label: Avg Customer LTV
+    type: simple
+    type_params:
+      measure: avg_lifetime_value
+
+  - name: revenue_per_customer
+    description: Total revenue divided by distinct customer count.
+    label: Revenue per Customer
+    type: derived
+    type_params:
+      expr: total_revenue / nullif(customer_count, 0)
+      metrics:
+        - name: total_revenue
+          offset_window: null
+        - name: customer_count
+          offset_window: null

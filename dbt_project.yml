@@ -1,0 +1,71 @@
+name: 'thelook_analytics'
+version: '1.0.0'
+config-version: 2
+
+profile: 'thelook_analytics'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+# ---------------------------------------------------------------------------
+# Schema routing
+# ---------------------------------------------------------------------------
+# Each layer writes to its own dataset/schema so permissions, costs, and
+# freshness can be managed independently.
+#
+#   staging + intermediate  →  analytics_staging
+#   marts                   →  analytics_marts
+#   snapshots               →  analytics_snapshots
+#   semantic                →  analytics_semantic
+# ---------------------------------------------------------------------------
+
+models:
+  thelook_analytics:
+
+    staging:
+      +schema: staging
+      +materialized: incremental
+      # Default incremental for the three large event-driven tables
+      # (orders, order_items, users). stg_products overrides to view
+      # in its own config block — no timestamp to filter on.
+
+    intermediate:
+      +schema: staging
+      +materialized: incremental
+      # Incremental mirrors stg_order_items — same unique_key and
+      # timestamp filter so the enriched join stays in sync without
+      # a full three-table rebuild on every run.
+
+    marts:
+      +schema: marts
+      +materialized: table
+      # Tables: mart models are aggregated, heavily queried, and
+      # tolerant of hourly staleness. Materializing as tables avoids
+      # re-running the full join + aggregation on every dashboard refresh.
+
+    semantic:
+      +schema: semantic
+      +materialized: table
+
+snapshots:
+  thelook_analytics:
+    +target_schema: snapshots
+
+# ---------------------------------------------------------------------------
+# Global test severity
+# ---------------------------------------------------------------------------
+tests:
+  thelook_analytics:
+    +severity: error
+
+# ---------------------------------------------------------------------------
+# Query settings
+# ---------------------------------------------------------------------------
+vars:
+  # Used in mart_customer_lifetime_value for the active customer window.
+  # Change once here rather than editing SQL.
+  active_customer_days: 90

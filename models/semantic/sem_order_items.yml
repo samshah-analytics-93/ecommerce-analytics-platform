@@ -1,0 +1,115 @@
+version: 2
+
+semantic_models:
+  - name: order_items
+    description: >
+      Enriched order items — the core fact model for the semantic layer.
+      Supports revenue, margin, volume, and return rate metrics sliced by
+      any combination of product, customer, channel, and time dimensions.
+    model: ref('int_order_items_enriched')
+    defaults:
+      agg_time_dimension: order_day
+
+    entities:
+      - name: order_item
+        type: primary
+        expr: order_item_id
+
+      - name: order
+        type: foreign
+        expr: order_id
+
+      - name: customer
+        type: foreign
+        expr: user_id
+
+      - name: product
+        type: foreign
+        expr: product_id
+
+    dimensions:
+      - name: order_day
+        type: time
+        type_params:
+          time_granularity: day
+        expr: order_date
+
+      - name: item_status
+        type: categorical
+
+      - name: is_revenue_item
+        type: categorical
+        expr: cast(is_revenue_item as string)
+
+      - name: is_returned
+        type: categorical
+        expr: cast(is_returned as string)
+
+      - name: product_category
+        type: categorical
+
+      - name: brand
+        type: categorical
+
+      - name: department
+        type: categorical
+
+      - name: acquisition_channel
+        type: categorical
+
+      - name: country
+        type: categorical
+
+      - name: gender
+        type: categorical
+
+    measures:
+      - name: total_revenue
+        description: Sum of sale_price for all revenue items (excludes Cancelled/Returned).
+        agg: sum
+        expr: case when is_revenue_item then sale_price else 0 end
+
+      - name: total_cost
+        description: Sum of product cost for all revenue items.
+        agg: sum
+        expr: case when is_revenue_item then cost else 0 end
+
+      - name: total_margin
+        description: Sum of item_margin for all revenue items.
+        agg: sum
+        expr: case when is_revenue_item then item_margin else 0 end
+
+      - name: total_items_sold
+        description: Count of revenue items.
+        agg: sum
+        expr: case when is_revenue_item then 1 else 0 end
+
+      - name: total_items_returned
+        description: Count of returned items.
+        agg: sum
+        expr: case when is_returned then 1 else 0 end
+
+      - name: total_non_cancelled_items
+        description: Count of all items that were not cancelled (denominator for return rate).
+        agg: sum
+        expr: case when not is_cancelled then 1 else 0 end
+
+      - name: order_count
+        description: Distinct count of orders with at least one revenue item.
+        agg: count_distinct
+        expr: case when is_revenue_item then order_id end
+
+      - name: customer_count
+        description: Distinct count of customers with at least one revenue item.
+        agg: count_distinct
+        expr: case when is_revenue_item then user_id end
+
+      - name: gross_revenue_all
+        description: Sum of sale_price for ALL items regardless of status (for return analysis).
+        agg: sum
+        expr: sale_price
+
+      - name: returned_revenue
+        description: Sum of sale_price for returned items only.
+        agg: sum
+        expr: case when is_returned then sale_price else 0 end

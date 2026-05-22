@@ -1,0 +1,92 @@
+version: 2
+
+models:
+  - name: mart_order_performance
+    description: '{{ doc("mart_order_performance") }}'
+    columns:
+      - name: order_month
+        description: Primary key. First day of the calendar month (UTC).
+        tests:
+          - unique
+          - not_null
+      - name: order_count
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+      - name: gross_revenue
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: margin_pct
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+
+  - name: mart_customer_acquisition
+    description: '{{ doc("mart_customer_acquisition") }}'
+    columns:
+      - name: acquisition_channel
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: registered_customers
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+      - name: conversion_rate_pct
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+      - name: total_revenue
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+  - name: mart_product_category_returns
+    description: '{{ doc("mart_product_category_returns") }}'
+    columns:
+      - name: product_category
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: return_rate_pct
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+      - name: net_revenue
+        tests:
+          - not_null
+
+  - name: mart_customer_lifetime_value
+    description: '{{ doc("mart_customer_lifetime_value") }}'
+    columns:
+      - name: user_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: lifetime_value
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: customer_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['active', 'lapsed', 'never_ordered']
+      - name: total_orders
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0

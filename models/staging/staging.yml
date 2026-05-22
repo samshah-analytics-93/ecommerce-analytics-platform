@@ -1,0 +1,125 @@
+version: 2
+
+sources:
+  - name: thelook_ecommerce
+    database: bigquery-public-data
+    schema: thelook_ecommerce
+    description: '{{ doc("src_thelook") }}'
+    loader: bigquery_public_data
+    loaded_at_field: created_at
+    freshness:
+      warn_after: {count: 24, period: hour}
+      error_after: {count: 72, period: hour}
+    tables:
+      - name: orders
+        description: One row per order. ~100K rows.
+      - name: order_items
+        description: One row per item within an order. ~300K rows.
+      - name: users
+        description: One row per registered customer. ~100K rows.
+      - name: products
+        description: One row per product in the catalog. ~30K rows.
+        loaded_at_field: null
+        freshness: null
+
+models:
+  - name: stg_orders
+    description: '{{ doc("stg_orders") }}'
+    columns:
+      - name: order_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_users')
+              field: user_id
+      - name: order_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Cancelled', 'Complete', 'Processing', 'Returned', 'Shipped']
+      - name: warehouse_created_at
+        description: Timestamp when this record was synced into the data warehouse.
+
+  - name: stg_order_items
+    description: '{{ doc("stg_order_items") }}'
+    columns:
+      - name: order_item_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_products')
+              field: product_id
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_users')
+              field: user_id
+      - name: item_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Cancelled', 'Complete', 'Processing', 'Returned', 'Shipped']
+      - name: sale_price
+        tests:
+          - not_null
+      - name: warehouse_created_at
+        description: Timestamp when this record was synced into the data warehouse.
+
+  - name: stg_users
+    description: '{{ doc("stg_users") }}'
+    columns:
+      - name: user_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: email
+        tests:
+          - unique
+          - not_null
+      - name: acquisition_channel
+        tests:
+          - not_null
+      - name: warehouse_created_at
+        description: Timestamp when this record was synced into the data warehouse.
+
+  - name: stg_products
+    description: '{{ doc("stg_products") }}'
+    columns:
+      - name: product_id
+        description: Primary key.
+        tests:
+          - unique
+          - not_null
+      - name: product_category
+        tests:
+          - not_null
+      - name: cost
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: retail_price
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+      - name: warehouse_created_at
+        description: Timestamp when this record was synced into the data warehouse.
