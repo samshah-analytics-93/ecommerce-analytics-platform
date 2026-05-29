@@ -10,14 +10,19 @@ config(
 WITH source AS (
     SELECT
         CAST(id AS INT64) AS user_id,
-        INITCAP(TRIM(CAST(first_name AS STRING))) AS first_name,
-        INITCAP(TRIM(CAST(last_name AS STRING))) AS last_name,
-        LOWER(TRIM(CAST(email AS STRING))) AS email,
+        -- PII: first_name excluded — contains personally identifiable information
+        -- PII: last_name excluded — contains personally identifiable information
+        -- PII: email excluded — contains personally identifiable information
         CAST(age AS INT64) AS age,
         INITCAP(TRIM(CAST(gender AS STRING))) AS gender,
         INITCAP(TRIM(CAST(country AS STRING))) AS country,
         INITCAP(TRIM(CAST(city AS STRING))) AS city,
         INITCAP(TRIM(CAST(state AS STRING))) AS state,
+        -- PII: street_address excluded — contains personally identifiable information
+        -- PII: postal_code excluded — contains personally identifiable information
+        -- PII: latitude excluded — contains personally identifiable information
+        -- PII: longitude excluded — contains personally identifiable information
+        -- PII: user_geom excluded — contains personally identifiable information
         INITCAP(TRIM(CAST(traffic_source AS STRING))) AS acquisition_channel,
         CAST(created_at AS TIMESTAMP) AS user_created_at
     FROM {{ source('thelook_ecommerce', 'users') }}
@@ -36,9 +41,6 @@ deduped AS (
 
 SELECT
     user_id,
-    first_name,
-    last_name,
-    email,
     age,
     gender,
     country,

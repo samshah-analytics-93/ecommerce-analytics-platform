@@ -90,10 +90,7 @@ models:
         tests:
           - unique
           - not_null
-      - name: email
-        tests:
-          - unique
-          - not_null
+      # PII: email excluded — contains personally identifiable information
       - name: acquisition_channel
         tests:
           - not_null

@@ -5,7 +5,7 @@
         target_schema='snapshots',
         unique_key='id',
         strategy='check',
-        check_cols=['city', 'state', 'country', 'email'],
+        check_cols=['city', 'state', 'country'],
         invalidate_hard_deletes=True
     )
 }}
@@ -28,9 +28,9 @@
 
 SELECT
     id,
-    first_name,
-    last_name,
-    email,
+    -- PII: first_name excluded — contains personally identifiable information
+    -- PII: last_name excluded — contains personally identifiable information
+    -- PII: email excluded — contains personally identifiable information
     age,
     gender,
     city,

@@ -40,9 +40,9 @@ customer_metrics AS (
 
 SELECT
     u.user_id,
-    u.first_name,
-    u.last_name,
-    u.email,
+    -- PII: first_name excluded — contains personally identifiable information
+    -- PII: last_name excluded — contains personally identifiable information
+    -- PII: email excluded — contains personally identifiable information
     u.acquisition_channel,
     u.country,
     u.gender,

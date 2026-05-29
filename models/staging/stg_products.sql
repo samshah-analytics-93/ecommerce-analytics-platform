@@ -16,7 +16,8 @@ WITH source AS (
         INITCAP(TRIM(CAST(department AS STRING))) AS department,
         UPPER(TRIM(CAST(sku AS STRING))) AS sku,
         ROUND(CAST(cost AS NUMERIC), 2) AS cost,
-        ROUND(CAST(retail_price AS NUMERIC), 2) AS retail_price
+        ROUND(CAST(retail_price AS NUMERIC), 2) AS retail_price,
+        CAST(distribution_center_id AS INT64) AS distribution_center_id
     FROM {{ source('thelook_ecommerce', 'products') }}
 ),
 
@@ -36,6 +37,7 @@ SELECT
     sku,
     cost,
     retail_price,
+    distribution_center_id,
     CURRENT_TIMESTAMP() AS warehouse_created_at
 FROM deduped
 WHERE row_num = 1
