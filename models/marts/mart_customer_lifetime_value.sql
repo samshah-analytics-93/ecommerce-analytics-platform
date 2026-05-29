@@ -1,15 +1,19 @@
 {{
-config(materialized='table')
+config(
+    materialized='incremental',
+    unique_key='user_id',
+    incremental_strategy='merge',
+    on_schema_change='sync_all_columns'
+)
 }}
 
 /*
 Grain: one row per registered customer
 Answers: "Who are our top customers by lifetime value?"
 
-Materialization: table (full refresh). Lifetime metrics require a full
-scan of all historical items per customer — incremental would need to
-reprocess every customer who placed a new order, which at ~100K users
-saves negligible compute vs a full rebuild.
+Materialization: incremental (merge on user_id). Full scan of source
+on every run since lifetime metrics require all historical orders per
+customer, but only rows where metrics have changed are written back.
 
 The active-customer window uses dbt var('active_customer_days') so it
 can be changed in dbt_project.yml without editing SQL.

@@ -1,13 +1,19 @@
 {{
-config(materialized='table')
+config(
+    materialized='incremental',
+    unique_key='product_category',
+    incremental_strategy='merge',
+    on_schema_change='sync_all_columns'
+)
 }}
 
 /*
 Grain: one row per product category
 Answers: "Which product categories have the highest return rates?"
 
-Materialization: table (full refresh). Output is ~20 rows — one per
-category — so a full rebuild is trivial.
+Materialization: incremental (merge on product_category). Full scan
+of source on every run since return rates depend on all historical
+items, but only changed category rows are written back.
 
 Denominator excludes cancelled items (never shipped, not eligible for
 return). Numerator counts items flagged as is_returned.

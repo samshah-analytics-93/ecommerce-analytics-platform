@@ -1,5 +1,10 @@
 {{
-config(materialized='view')
+config(
+    materialized='incremental',
+    unique_key='product_id',
+    incremental_strategy='merge',
+    on_schema_change='sync_all_columns'
+)
 }}
 
 WITH source AS (
@@ -18,7 +23,7 @@ WITH source AS (
 deduped AS (
     SELECT
         *,
-        ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY product_id) AS row_num
+        ROW_NUMBER() OVER (PARTITION BY product_id ORDER BY sku) AS row_num
     FROM source
 )
 

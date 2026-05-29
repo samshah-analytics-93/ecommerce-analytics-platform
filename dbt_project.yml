@@ -42,10 +42,10 @@ models:
 
     marts:
       +schema: marts
-      +materialized: table
-      # Tables: mart models are aggregated, heavily queried, and
-      # tolerant of hourly staleness. Materializing as tables avoids
-      # re-running the full join + aggregation on every dashboard refresh.
+      +materialized: incremental
+      # Incremental (merge): all mart models use merge on their primary
+      # key. Aggregation-based marts do a full source scan but only
+      # write back changed rows, reducing warehouse write costs.
 
     semantic:
       +schema: semantic

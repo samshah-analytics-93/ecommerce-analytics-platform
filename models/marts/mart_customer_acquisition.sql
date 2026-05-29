@@ -1,13 +1,19 @@
 {{
-config(materialized='table')
+config(
+    materialized='incremental',
+    unique_key='acquisition_channel',
+    incremental_strategy='merge',
+    on_schema_change='sync_all_columns'
+)
 }}
 
 /*
 Grain: one row per acquisition channel
 Answers: "Which acquisition channels are driving the most revenue?"
 
-Materialization: table (full refresh). Output is ~5 rows — one per
-channel — so incremental adds complexity with no practical benefit.
+Materialization: incremental (merge on acquisition_channel). Full scan
+of source on every run since channel metrics depend on all historical
+orders, but only changed channel rows are written back.
 */
 
 WITH customer_orders AS (
